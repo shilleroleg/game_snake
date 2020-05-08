@@ -16,11 +16,11 @@ class Snake:
                            [WIDTH/2+self.sell_width, HEIGHT/2],
                            [WIDTH/2 + 2*self.sell_width, HEIGHT/2]]
 
-        # canvas.bind('<Up>', lambda event: self.change_direction(0, -2))
-        # canvas.bind('<Down>', lambda event: self.change_direction(0, 2))
-        # canvas.bind('<Left>', lambda event: self.change_direction(-2, 0))
-        # canvas.bind('<Right>', lambda event: self.change_direction(2, 0))
-        canvas.bind('<Button-1>', lambda event: self.change_direction(0, -self.sell_width))
+        canvas.bind('<Up>', lambda event: self.change_direction(0, -self.sell_width))
+        canvas.bind('<Down>', lambda event: self.change_direction(0, self.sell_width))
+        canvas.bind('<Left>', lambda event: self.change_direction(-self.sell_width, 0))
+        canvas.bind('<Right>', lambda event: self.change_direction(self.sell_width, 0))
+        canvas.focus_set()
 
         self.draw_snake(self.snake_body)
 
@@ -34,13 +34,19 @@ class Snake:
                                     tags="snake_id_" + str(count))
             count += 1
 
+    def erase_snake(self):
+        count = 0
+        for _ in self.snake_body:
+            canvas.delete("snake_id_" + str(count))
+            count += 1
+
     def move(self):
         snake_head = self.snake_body[0]
         new_head = [snake_head[0] + self.dx, snake_head[1] + self.dy]
 
         self.snake_body.insert(0, new_head)
         self.snake_body.pop()
-        canvas.delete("all")
+        self.erase_snake()
         self.draw_snake(self.snake_body)
 
     def change_direction(self, *args):
@@ -65,18 +71,18 @@ class Snake:
 
 
 def motion():
-
     snake.move()
 
     if snake.check_border():
         game_over()
     else:
-        root.after(100, motion)
+        root.after(120, motion)
 
 
 def start_game():
     global snake
     snake = Snake()
+    create_apple()
     motion()
 
 
@@ -88,6 +94,17 @@ def game_over():
     start_game()
 
 
+def create_apple():
+    # global apple
+    x = randint(snake.sell_width * 2, WIDTH - snake.sell_width * 2)
+    y = randint(snake.sell_width * 2, HEIGHT - snake.sell_width * 2)
+    print(snake.sell_width, x, y)
+
+    canvas.create_rectangle(x, y,
+                            x + snake.sell_width, y + snake.sell_width,
+                            fill="red", tags="apple")
+
+
 def main():
     global root, canvas
     global menu
@@ -96,8 +113,6 @@ def main():
 
     canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT)
     canvas.pack(side='bottom')
-
-
 
     # menu = Menu()
 
