@@ -5,6 +5,9 @@ from random import randint, choice
 WIDTH = 500
 HEIGHT = 400
 
+# TODO Запретить змейке разворачиваться на 360 градусов
+# TODO Запрограммировать проверку столкновения с яблоком
+
 
 class Snake:
     def __init__(self):
@@ -15,6 +18,7 @@ class Snake:
         self.snake_body = [[WIDTH/2, HEIGHT/2],
                            [WIDTH/2+self.sell_width, HEIGHT/2],
                            [WIDTH/2 + 2*self.sell_width, HEIGHT/2]]
+        self.snake_head = self.snake_body[0]
 
         canvas.bind('<Up>', lambda event: self.change_direction(0, -self.sell_width))
         canvas.bind('<Down>', lambda event: self.change_direction(0, self.sell_width))
@@ -50,24 +54,25 @@ class Snake:
         self.draw_snake(self.snake_body)
 
     def change_direction(self, *args):
-        # print(args[0])
         self.dx = args[0]
         self.dy = args[1]
-        # self.dx = 0
-        # self.dy = -2
 
     def grow(self):
         pass
 
     def check_border(self):
         snake_head = self.snake_body[0]
-        if snake_head[0] <= 0 or \
+        if snake_head[0] < 0 or \
                 snake_head[0] >= WIDTH or \
-                snake_head[1] <= 0 or \
+                snake_head[1] < 0 or \
                 snake_head[1] >= HEIGHT:
             return True
         else:
             return False
+
+    def check_collision_apple(self):
+        print(canvas.coords(apple))
+        return False
 
 
 def motion():
@@ -75,34 +80,36 @@ def motion():
 
     if snake.check_border():
         game_over()
+    elif snake.check_collision_apple():
+        pass
     else:
         root.after(120, motion)
 
 
 def start_game():
-    global snake
+    global snake, apple
+    canvas.delete("all")
     snake = Snake()
-    create_apple()
+    apple = create_apple()
     motion()
 
 
 def game_over():
-    # FIXME Don't work correctly
     canvas.create_text(WIDTH/2, HEIGHT/2, text="Game over!!!", justify="center", font="Verdana 14")
-    time.sleep(2)
-    # canvas.delete(game_over_text)
-    start_game()
+    canvas.update()
+    root.after(2000, start_game())
 
 
 def create_apple():
-    # global apple
     x = randint(snake.sell_width * 2, WIDTH - snake.sell_width * 2)
     y = randint(snake.sell_width * 2, HEIGHT - snake.sell_width * 2)
-    print(snake.sell_width, x, y)
+    # Отбрасываем остаток, что бы яблоко всегда располагалось в клетках, по которым движется змейка
+    x -= x % 10
+    y -= y % 10
 
-    canvas.create_rectangle(x, y,
-                            x + snake.sell_width, y + snake.sell_width,
-                            fill="red", tags="apple")
+    return canvas.create_rectangle(x, y,
+                                   x + snake.sell_width, y + snake.sell_width,
+                                   fill="orange red", tags="apple")
 
 
 def main():
