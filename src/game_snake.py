@@ -1,13 +1,12 @@
 import tkinter as tk
-import time
 from random import randint, choice
 
 WIDTH = 500
 HEIGHT = 400
 
 # TODO Запретить змейке разворачиваться на 360 градусов
-# TODO Запрограммировать проверку столкновения с яблоком
-
+# TODO Запретить змее пересекать саму себя
+# TODO Проверять чтояблоко создается не внутри змеи
 
 class Snake:
     def __init__(self):
@@ -18,7 +17,7 @@ class Snake:
         self.snake_body = [[WIDTH/2, HEIGHT/2],
                            [WIDTH/2+self.sell_width, HEIGHT/2],
                            [WIDTH/2 + 2*self.sell_width, HEIGHT/2]]
-        self.snake_head = self.snake_body[0]
+        # self.snake_head = self.snake_body[0]
 
         canvas.bind('<Up>', lambda event: self.change_direction(0, -self.sell_width))
         canvas.bind('<Down>', lambda event: self.change_direction(0, self.sell_width))
@@ -58,7 +57,12 @@ class Snake:
         self.dy = args[1]
 
     def grow(self):
-        pass
+        print(self.snake_body)
+        g_dx = self.snake_body[-2][0] - self.snake_body[-1][0]
+        g_dy = self.snake_body[-2][1] - self.snake_body[-1][1]
+
+        self.snake_body.append([self.snake_body[-1][0] + g_dx, self.snake_body[-1][1] + g_dy])
+        self.draw_snake(self.snake_body)
 
     def check_border(self):
         snake_head = self.snake_body[0]
@@ -71,8 +75,13 @@ class Snake:
             return False
 
     def check_collision_apple(self):
-        print(canvas.coords(apple))
-        return False
+        snake_head = self.snake_body[0]
+        coord_apple = canvas.coords(apple)
+        if snake_head[0] == coord_apple[0] and \
+                snake_head[1] == coord_apple[1]:
+            return True
+        else:
+            return False
 
 
 def motion():
@@ -81,16 +90,20 @@ def motion():
     if snake.check_border():
         game_over()
     elif snake.check_collision_apple():
-        pass
+        print("Collision")
+        snake.grow()
+        canvas.delete('apple')
+        create_apple()
+        root.after(120, motion)
     else:
         root.after(120, motion)
 
 
 def start_game():
-    global snake, apple
+    global snake
     canvas.delete("all")
     snake = Snake()
-    apple = create_apple()
+    create_apple()
     motion()
 
 
@@ -101,15 +114,16 @@ def game_over():
 
 
 def create_apple():
+    global apple
     x = randint(snake.sell_width * 2, WIDTH - snake.sell_width * 2)
     y = randint(snake.sell_width * 2, HEIGHT - snake.sell_width * 2)
     # Отбрасываем остаток, что бы яблоко всегда располагалось в клетках, по которым движется змейка
     x -= x % 10
     y -= y % 10
 
-    return canvas.create_rectangle(x, y,
-                                   x + snake.sell_width, y + snake.sell_width,
-                                   fill="orange red", tags="apple")
+    apple = canvas.create_rectangle(x, y,
+                                    x + snake.sell_width, y + snake.sell_width,
+                                    fill="orange red", tags="apple")
 
 
 def main():
