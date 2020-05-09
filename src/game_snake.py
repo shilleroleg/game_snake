@@ -65,6 +65,7 @@ class Snake:
         self.draw_snake(self.snake_body)
 
     def check_border(self):
+        # Проверяем столкновение с границей экрана
         snake_head = self.snake_body[0]
         if snake_head[0] < 0 or \
                 snake_head[0] >= WIDTH or \
@@ -75,6 +76,7 @@ class Snake:
             return False
 
     def check_collision_apple(self):
+        # Проверяем пересечение с яблоком
         snake_head = self.snake_body[0]
         coord_apple = canvas.coords(apple)
         if snake_head[0] == coord_apple[0] and \
@@ -83,11 +85,23 @@ class Snake:
         else:
             return False
 
+    def check_self_cross(self):
+        # Проверяем пересечение с собственным телом
+        snake_head = self.snake_body[0]
+        for body in self.snake_body[3:]:
+            if snake_head[0] == body[0] and\
+                    snake_head[1] == body[1]:
+                return True
+            else:
+                return False
+
 
 def motion():
     snake.move()
 
     if snake.check_border():
+        game_over()
+    elif snake.check_self_cross():
         game_over()
     elif snake.check_collision_apple():
         print("Collision")
