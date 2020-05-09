@@ -4,19 +4,19 @@ from random import randint, choice
 WIDTH = 500
 HEIGHT = 400
 
-# TODO Запретить змейке разворачиваться на 360 градусов
-# TODO Запретить змее пересекать саму себя
-# TODO Проверять чтояблоко создается не внутри змеи
+# TODO Проверять, что яблоко создается не внутри змеи
+
 
 class Snake:
     def __init__(self):
-        self.sell_width = 10
+        self.sell_width = 10.0
         self.dx = -self.sell_width
-        self.dy = 0
+        self.dy = 0.0
 
-        self.snake_body = [[WIDTH/2, HEIGHT/2],
-                           [WIDTH/2+self.sell_width, HEIGHT/2],
-                           [WIDTH/2 + 2*self.sell_width, HEIGHT/2]]
+        self.snake_body = [[WIDTH / 2, HEIGHT / 2],
+                           [WIDTH / 2 + self.sell_width, HEIGHT / 2],
+                           [WIDTH / 2 + 2 * self.sell_width, HEIGHT / 2],
+                           [WIDTH / 2 + 3 * self.sell_width, HEIGHT / 2]]
         # self.snake_head = self.snake_body[0]
 
         canvas.bind('<Up>', lambda event: self.change_direction(0, -self.sell_width))
@@ -53,11 +53,19 @@ class Snake:
         self.draw_snake(self.snake_body)
 
     def change_direction(self, *args):
-        self.dx = args[0]
-        self.dy = args[1]
+        # Изменяем направление движения змеи
+        # Если это не изменение на противоположное
+        old_dx = self.snake_body[0][0] - self.snake_body[1][0]
+        old_dy = self.snake_body[0][1] - self.snake_body[1][1]
+        new_dx = args[0]
+        new_dy = args[1]
+
+        if old_dx != -new_dx or old_dy != -new_dy:
+            self.dx = new_dx
+            self.dy = new_dy
 
     def grow(self):
-        print(self.snake_body)
+        # Добавляем сегмент к змее
         g_dx = self.snake_body[-2][0] - self.snake_body[-1][0]
         g_dy = self.snake_body[-2][1] - self.snake_body[-1][1]
 
@@ -87,24 +95,22 @@ class Snake:
 
     def check_self_cross(self):
         # Проверяем пересечение с собственным телом
+        flag = False
         snake_head = self.snake_body[0]
-        for body in self.snake_body[3:]:
+        for body in self.snake_body[2:]:
             if snake_head[0] == body[0] and\
                     snake_head[1] == body[1]:
-                return True
-            else:
-                return False
+                flag = True
+                break
+        return flag
 
 
 def motion():
     snake.move()
 
-    if snake.check_border():
-        game_over()
-    elif snake.check_self_cross():
+    if snake.check_border() or snake.check_self_cross():
         game_over()
     elif snake.check_collision_apple():
-        print("Collision")
         snake.grow()
         canvas.delete('apple')
         create_apple()
@@ -132,8 +138,8 @@ def create_apple():
     x = randint(snake.sell_width * 2, WIDTH - snake.sell_width * 2)
     y = randint(snake.sell_width * 2, HEIGHT - snake.sell_width * 2)
     # Отбрасываем остаток, что бы яблоко всегда располагалось в клетках, по которым движется змейка
-    x -= x % 10
-    y -= y % 10
+    x -= x % snake.sell_width
+    y -= y % snake.sell_width
 
     apple = canvas.create_rectangle(x, y,
                                     x + snake.sell_width, y + snake.sell_width,
