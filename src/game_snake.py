@@ -17,13 +17,8 @@ class Snake:
                            [WIDTH / 2 + self.sell_width, HEIGHT / 2],
                            [WIDTH / 2 + 2 * self.sell_width, HEIGHT / 2],
                            [WIDTH / 2 + 3 * self.sell_width, HEIGHT / 2]]
-        # self.snake_head = self.snake_body[0]
 
-        canvas.bind('<Up>', lambda event: self.change_direction(0, -self.sell_width))
-        canvas.bind('<Down>', lambda event: self.change_direction(0, self.sell_width))
-        canvas.bind('<Left>', lambda event: self.change_direction(-self.sell_width, 0))
-        canvas.bind('<Right>', lambda event: self.change_direction(self.sell_width, 0))
-        canvas.focus_set()
+        self.bind_keys()
 
         self.draw_snake(self.snake_body)
 
@@ -86,9 +81,8 @@ class Snake:
     def check_collision_apple(self):
         # Проверяем пересечение с яблоком
         snake_head = self.snake_body[0]
-        coord_apple = canvas.coords(apple)
-        if snake_head[0] == coord_apple[0] and \
-                snake_head[1] == coord_apple[1]:
+        if snake_head[0] == apple.x and \
+                snake_head[1] == apple.y:
             return True
         else:
             return False
@@ -103,6 +97,40 @@ class Snake:
                 flag = True
                 break
         return flag
+
+    def bind_keys(self):
+        canvas.bind('<Up>', lambda event: self.change_direction(0, -self.sell_width))
+        canvas.bind('<Down>', lambda event: self.change_direction(0, self.sell_width))
+        canvas.bind('<Left>', lambda event: self.change_direction(-self.sell_width, 0))
+        canvas.bind('<Right>', lambda event: self.change_direction(self.sell_width, 0))
+        canvas.focus_set()
+
+
+class Apple:
+    def __init__(self):
+        self.x = None
+        self.y = None
+
+    def init_x_y(self):
+        self.x = randint(snake.sell_width * 2, WIDTH - snake.sell_width * 2)
+        self.y = randint(snake.sell_width * 2, HEIGHT - snake.sell_width * 2)
+        # Отбрасываем остаток, что бы яблоко всегда располагалось в клетках, по которым движется змейка
+        self.x -= self.x % snake.sell_width
+        self.y -= self.y % snake.sell_width
+
+    def create_apple(self):
+        color_apple = "orange red"
+        tag_apple = "apple"
+
+        self.init_x_y()
+        canvas.create_rectangle(self.x, self.y,
+                                self.x + snake.sell_width, self.y + snake.sell_width,
+                                fill=color_apple, tags=tag_apple)
+
+    def delete_apple(self):
+        canvas.delete('apple')
+        self.x = None
+        self.y = None
 
 
 class Menu:
@@ -135,8 +163,8 @@ def motion():
         game_over()
     elif snake.check_collision_apple():
         snake.grow()
-        canvas.delete('apple')
-        create_apple()
+        apple.delete_apple()
+        apple.create_apple()
         menu.score_change(1)
         root.after(120, motion)
     else:
@@ -144,10 +172,13 @@ def motion():
 
 
 def start_game():
-    global snake
+    global snake, apple
     canvas.delete("all")
+
     snake = Snake()
-    create_apple()
+    apple = Apple()
+    apple.create_apple()
+
     motion()
 
 
@@ -156,19 +187,6 @@ def game_over():
     canvas.update()
     menu.score_erase()
     root.after(2000, start_game())
-
-
-def create_apple():
-    global apple
-    x = randint(snake.sell_width * 2, WIDTH - snake.sell_width * 2)
-    y = randint(snake.sell_width * 2, HEIGHT - snake.sell_width * 2)
-    # Отбрасываем остаток, что бы яблоко всегда располагалось в клетках, по которым движется змейка
-    x -= x % snake.sell_width
-    y -= y % snake.sell_width
-
-    apple = canvas.create_rectangle(x, y,
-                                    x + snake.sell_width, y + snake.sell_width,
-                                    fill="orange red", tags="apple")
 
 
 def main():
