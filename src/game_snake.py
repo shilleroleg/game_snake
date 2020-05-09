@@ -1,5 +1,5 @@
 import tkinter as tk
-from random import randint, choice
+from random import randint
 
 WIDTH = 500
 HEIGHT = 400
@@ -105,6 +105,29 @@ class Snake:
         return flag
 
 
+class Menu:
+    def __init__(self):
+        self.val_score_num = 0
+
+        self.frame_top = tk.Frame(root)
+
+        self.label_1 = tk.Label(self.frame_top, text="Score:", font="Times 14")
+        self.val_score_label = tk.Label(self.frame_top, text=str(self.val_score_num), font="Times 14")
+
+        self.frame_top.pack(side='top')
+        self.label_1.pack(side='left', padx=10, pady=10)
+        self.val_score_label.pack(side='left', padx=10, pady=10)
+
+    def score_change(self, count):
+        # Увеличивае кол-во очков на величину count
+        self.val_score_num += count
+        self.val_score_label['text'] = str(self.val_score_num)
+
+    def score_erase(self):
+        # Обнуляем счетчик очков
+        self.score_change(-self.val_score_num)
+
+
 def motion():
     snake.move()
 
@@ -114,6 +137,7 @@ def motion():
         snake.grow()
         canvas.delete('apple')
         create_apple()
+        menu.score_change(1)
         root.after(120, motion)
     else:
         root.after(120, motion)
@@ -130,6 +154,7 @@ def start_game():
 def game_over():
     canvas.create_text(WIDTH/2, HEIGHT/2, text="Game over!!!", justify="center", font="Verdana 14")
     canvas.update()
+    menu.score_erase()
     root.after(2000, start_game())
 
 
@@ -155,7 +180,7 @@ def main():
     canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT)
     canvas.pack(side='bottom')
 
-    # menu = Menu()
+    menu = Menu()
 
     start_game()
 
