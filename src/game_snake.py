@@ -24,19 +24,17 @@ class Snake:
 
     def draw_snake(self, snake_body):
         color = "lawn green"
-        count = 0
-        for body in snake_body:
+        for count, body in enumerate(snake_body):
             canvas.create_rectangle(body,
                                     body[0] + self.sell_width, body[1] + self.sell_width,
                                     fill=color,
                                     tags="snake_id_" + str(count))
-            count += 1
 
     def erase_snake(self):
-        count = 0
-        for _ in self.snake_body:
+        # count = 0
+        for count in range(len(self.snake_body)):
             canvas.delete("snake_id_" + str(count))
-            count += 1
+            # count += 1
 
     def move(self):
         snake_head = self.snake_body[0]
@@ -117,6 +115,12 @@ class Apple:
         # Отбрасываем остаток, что бы яблоко всегда располагалось в клетках, по которым движется змейка
         self.x -= self.x % snake.sell_width
         self.y -= self.y % snake.sell_width
+
+        # Если яблоко создалось внутри змеи, пересчитываем координаты яблока
+        for body in snake.snake_body:
+            if self.x == body[0] and self.y == body[1]:
+                self.init_x_y()
+                break
 
     def create_apple(self):
         color_apple = "orange red"
